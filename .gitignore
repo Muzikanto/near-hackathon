@@ -1,0 +1,20 @@
+
+# ide
+.idea
+.vs
+.vscode
+.DS_Store
+
+# common
+build
+node_modules
+dist
+.env.development.local
+.env.production.local
+.env.production
+
+res
+target
+
+near-sdk-rs
+core-contracts

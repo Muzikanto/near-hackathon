@@ -1,0 +1,74 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+features:
+  - ipfsOnEthereumContracts
+  - fullTextSearch
+dataSources:
+  - kind: near
+    name: nft
+    network: near-testnet
+    source:
+      account: "dev-1643810988780-10800077455219"
+      startBlock: 81058966
+    mapping:
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mapping-nft.ts
+      entities:
+        - Token
+        - Account
+        - TokenSale
+        - Fractionation
+        - Metadata
+      receiptHandlers:
+        - handler: handleNft
+
+  - kind: near
+    name: rent
+    network: near-testnet
+    source:
+      account: "dev-1643811238214-30343571206522"
+      startBlock: 81059311
+    mapping:
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mapping-rent.ts
+      entities:
+        - Account
+        - Rent
+      receiptHandlers:
+        - handler: handleRent
+
+  - kind: near
+    name: market
+    network: near-testnet
+    source:
+      account: "dev-1643811241604-32051819748095"
+      startBlock: 81059311
+    mapping:
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mapping-market.ts
+      entities:
+        - Account
+        - Sale
+        - SaleCondition
+        - Market
+      receiptHandlers:
+        - handler: handleMarket
+
+  - kind: near
+    name: ft
+    network: near-testnet
+    source:
+      account: "dev-1643725438130-20082755834523"
+      startBlock: 80949000
+    mapping:
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mapping-ft.ts
+      entities:
+        - Account
+      receiptHandlers:
+        - handler: handleFt

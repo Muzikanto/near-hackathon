@@ -1,0 +1,154 @@
+type _Schema_
+  @fulltext(
+    name: "tokenSearch"
+    language: en
+    algorithm: rank
+    include: [{ entity: "Token", fields: [{ name: "ownerId" }] }]
+  )
+
+#type Market @entity {
+#  id: ID!
+#  salesFloor: BigDecimal!
+#  rentsFloor: BigDecimal!
+#  salesCount: Int!
+#  rentsCount: Int!
+#  salesOwners: Int!
+#  rentsOwners: Int!
+#}
+
+type Metadata @entity {
+  id: ID!
+  title: String
+  decsription: String
+  media: String
+
+  #
+
+  tokenId: String!
+  tokens: [Token!]! @derivedFrom(field: "metadata")
+}
+
+type Token @entity {
+  id: ID!
+  tokenId: String!
+
+  # royalty: {str: str}
+
+  collection: String
+  tokenType: String
+  rarity: String
+
+  bindToOwner: Boolean
+  locked: Boolean
+
+
+  #
+
+  ownerId: String!
+  metadataId: String
+  tokenSaleId: String
+  fractionationId: String
+
+  owner: Account!
+  metadata: Metadata
+  tokenSale: TokenSale
+  fractionation: Fractionation
+}
+
+type Account @entity {
+  id: ID!
+  balance: BigInt!
+
+  totalTransfers: Int!
+
+  currentSales: Int!
+  currentRents: Int!
+  currentNfts: Int!
+
+  totalSales: Int!
+  totalPaySales: Int!
+  totalPaySalesPrice: BigDecimal!
+
+  totalRents: Int!
+  totalPayRents: Int!
+  totalPayRentsPrice: BigDecimal!
+
+  totalMints: Int!
+  totalMintsPrice: BigDecimal!
+
+  totalBurn: Int!
+
+  #
+
+  tokens: [Token!]! @derivedFrom(field: "owner")
+  rents: [Rent!]! @derivedFrom(field: "owner")
+  sales: [Sale!]! @derivedFrom(field: "owner")
+  fractionations: [Fractionation!]! @derivedFrom(field: "owner")
+}
+
+type TokenSale @entity {
+  id: ID!
+  name: String!
+  amount: Int!
+  price: String!
+  buyMax: Int!
+  perTransactionMin: Int!
+  perTransactionMax: Int!
+  notMinted: Int!
+  locked: Boolean!
+  startDate: BigInt
+
+  #
+
+  tokens: [Token!]! @derivedFrom(field: "tokenSale")
+}
+
+type Fractionation @entity {
+  id: ID!
+  tokenId: String!
+  token: Token!
+  parts: [String!]!
+
+  #
+  ownerId: String!
+  owner: Account!
+  tokens: [Token!]! @derivedFrom(field: "fractionation")
+}
+
+type Rent @entity {
+  id: ID!
+  tokenId: ID!
+  ownerId: ID!
+  pricePerHour: String!
+  minTime: Int!
+  maxTime: Int!
+  endedAt: Int
+  createdAt: Int!
+
+  owner: Account!
+  token: Token!
+}
+
+type Sale @entity {
+  id: ID!
+  ownerId: ID!
+  nftContractId: ID!
+  tokenId: ID!
+#  sale_conditions: SaleConditions
+#  bids: Bids
+  createdAt: Int!
+  isAuction: Boolean!
+
+  owner: Account!
+  token: Token!
+  conditions: [SaleCondition!]! @derivedFrom(field: "sale")
+}
+
+type SaleCondition @entity {
+  id: ID!
+  ftTokenId: ID!
+  price: String!
+
+  sale: Sale!
+  saleId: ID!
+}
