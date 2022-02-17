@@ -1,6 +1,6 @@
 # Near Hackathon
 
-### Navigation
+### Methods
 
 - NFT
     - [nft_approve](./NFT/scripts/nft_approve.sh)
