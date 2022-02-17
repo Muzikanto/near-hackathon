@@ -1,5 +1,5 @@
 use crate::nft::{NonFungibleToken, TokenRarity, TokenCollection, SaleId, Royalty, TokenId, TokenType, Token};
-use crate::nft::metadata::TokenMetadata;
+use crate::nft::metadata::{TokenMetadata, TokenSubType};
 use near_sdk::{AccountId, env};
 use near_sdk::collections::UnorderedSet;
 use crate::nft::base::StorageKey;
@@ -19,6 +19,7 @@ impl NonFungibleToken {
     perpetual_royalties: Option<Royalty>,
     fractionation_id: Option<TokenId>,
     token_type: TokenType,
+    token_sub_type: Option<TokenSubType>,
   ) -> Token {
     let token = self.internal_create_nft_with_refund(
       token_id,
@@ -31,6 +32,7 @@ impl NonFungibleToken {
       perpetual_royalties,
       fractionation_id,
       token_type,
+      token_sub_type,
       Some(env::predecessor_account_id()),
     );
 
@@ -56,6 +58,7 @@ impl NonFungibleToken {
     perpetual_royalties: Option<Royalty>,
     fractionation_id: Option<TokenId>,
     token_type: TokenType,
+    token_sub_type: Option<TokenSubType>,
     _refund_id: Option<AccountId>,
   ) -> Token {
     // let prev_storage = env::storage_usage();
@@ -140,6 +143,7 @@ impl NonFungibleToken {
       royalty: Some(royalty),
       collection: Some(collection),
       token_type: Some(token_type),
+      token_sub_type: token_sub_type,
       rarity: Some(rarity),
       bind_to_owner,
       locked: None,

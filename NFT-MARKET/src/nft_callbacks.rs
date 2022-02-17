@@ -68,6 +68,13 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
       let bids = HashMap::new();
 
       let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
+
+      let exists = self.market.sales.get(&contract_and_token_id);
+
+      if exists.is_some() {
+        env::panic_str("Token already listed");
+      }
+
       let sale = Sale {
         owner_id: owner_id.clone().into(),
         approval_id,

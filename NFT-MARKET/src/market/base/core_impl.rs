@@ -13,7 +13,7 @@ use crate::market::base::log_market_offer;
 pub(crate) const GAS_FOR_FT_TRANSFER: Gas = Gas(5_000_000_000_000);
 /// greedy max Tgas for resolve_purchase
 pub(crate) const GAS_FOR_ROYALTIES: Gas = Gas(115_000_000_000_000);
-pub(crate) const GAS_FOR_NFT_TRANSFER: Gas = Gas(16_000_000_000_000);
+pub(crate) const GAS_FOR_NFT_TRANSFER: Gas = Gas(18_000_000_000_000);
 pub(crate) const BID_HISTORY_LENGTH_DEFAULT: u8 = 1;
 pub(crate) const NO_DEPOSIT: Balance = 0;
 // const STORAGE_PER_SALE: u128 = 1000 * STORAGE_PRICE_PER_BYTE;
@@ -79,13 +79,23 @@ impl MarketCore for MarketFactory {
   /// TODO remove without redirect to wallet? panic reverts
   // #[payable]
   fn market_remove_sale(&mut self, nft_contract_id: AccountId, token_id: String) {
-    assert_at_least_one_yocto();
-    let sale = self.internal_remove_sale(&nft_contract_id, &token_id);
-    let owner_id = env::predecessor_account_id();
-    assert_eq!(owner_id, sale.owner_id, "Must be sale owner");
-    self.refund_all_bids(&sale.bids);
+    // assert_at_least_one_yocto();
 
-    log_market_remove_sale(&owner_id, &nft_contract_id, &token_id);
+    let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
+    let sale = self.sales.get(&contract_and_token_id);
+
+    if sale.is_none() {
+      env::panic_str("Not found sale");
+    }
+
+    if let Some(sale) = sale {
+      let owner_id = env::predecessor_account_id();
+      assert_eq!(owner_id, sale.owner_id, "Must be sale owner");
+
+      self.internal_remove_sale(&nft_contract_id, &token_id);
+
+      self.refund_all_bids(&sale.bids);
+    }
   }
 
   // #[payable]
@@ -96,7 +106,7 @@ impl MarketCore for MarketFactory {
     ft_token_id: AccountId,
     price: U128,
   ) {
-    assert_at_least_one_yocto();
+    // assert_at_least_one_yocto();
     let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
     let mut sale = self.sales.get(&contract_and_token_id).expect("No sale");
     assert_eq!(

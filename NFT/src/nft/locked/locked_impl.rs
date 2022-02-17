@@ -15,7 +15,8 @@ impl NonFungibleToken {
 
     NftOnLock {
       token_id,
-      locked: &locked
+      locked: &locked,
+      account_id: &self.owner_by_id.get(&token_id).expect("Not found token owner"),
     }.emit();
   }
 

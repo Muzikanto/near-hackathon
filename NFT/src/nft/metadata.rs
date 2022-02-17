@@ -99,14 +99,23 @@ pub enum TokenCollection {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub enum TokenType {
+  Sketch,
   Badge,
+  //
   Hero,
   Avatar,
+  Pet,
+  //
   Weapon,
   Armor,
   Jewelry,
-  Pet,
   Shield,
+  //
   Potion,
-  Sketch,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub enum TokenSubType {
+  Hat,
 }

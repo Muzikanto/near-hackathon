@@ -22,6 +22,7 @@ impl NonFungibleToken {
     let royalty = self.token_royalty_by_id.as_ref().unwrap().get(&token_id);
     let collection = self.token_collection_by_id.as_ref().unwrap().get(&token_id);
     let token_type = self.token_type_by_id.as_ref().unwrap().get(&token_id);
+    let token_sub_type = self.token_sub_type_by_id.as_ref().unwrap().get(&token_id);
     let fractionation_id = self.fractionation_token_by_id.as_ref().unwrap().get(&token_id);
     let sale_id = self.sale_by_token.as_ref().unwrap().get(&token_id);
 
@@ -34,6 +35,7 @@ impl NonFungibleToken {
       royalty,
       collection,
       token_type,
+      token_sub_type,
       rarity,
       bind_to_owner,
       locked: Some(locked),

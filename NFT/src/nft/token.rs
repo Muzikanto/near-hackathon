@@ -1,4 +1,4 @@
-use crate::nft::metadata::{TokenMetadata, TokenRarity, TokenCollection, TokenType};
+use crate::nft::metadata::{TokenMetadata, TokenRarity, TokenCollection, TokenType, TokenSubType};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::AccountId;
 use std::collections::HashMap;
@@ -22,6 +22,7 @@ pub struct Token {
 
   pub collection: Option<TokenCollection>,
   pub token_type: Option<TokenType>,
+  pub token_sub_type: Option<TokenSubType>,
   pub rarity: Option<TokenRarity>,
 
   pub bind_to_owner: Option<bool>,
@@ -41,6 +42,7 @@ impl ToString for Token {
       royalty: self.royalty.clone(),
       collection: self.collection.clone(),
       token_type: self.token_type.clone(),
+      token_sub_type: self.token_sub_type.clone(),
       rarity: self.rarity.clone(),
       bind_to_owner: self.bind_to_owner.clone(),
       locked: self.locked.clone(),

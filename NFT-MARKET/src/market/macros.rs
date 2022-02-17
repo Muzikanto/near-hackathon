@@ -1,27 +1,4 @@
 #[macro_export]
-macro_rules! impl_market_stats {
-    ($contract: ident, $tokens: ident) => {
-        use $crate::MarketStats;
-
-        #[near_bindgen]
-        impl MarketStats for $contract {
-          fn market_avg_price(&self) -> U128 {
-            self.$tokens.market_avg_price()
-          }
-          fn market_sum_price(&self) -> U128 {
-            self.$tokens.market_sum_price()
-          }
-          fn market_floor_price(&self) -> U128 {
-            self.$tokens.market_floor_price()
-          }
-          fn market_total_owners(&self) -> U128 {
-            self.$tokens.market_total_owners()
-          }
-        }
-    };
-}
-
-#[macro_export]
 macro_rules! impl_market_core {
     ($contract: ident, $tokens: ident) => {
         use $crate::MarketCore;

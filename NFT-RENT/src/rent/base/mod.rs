@@ -14,7 +14,7 @@ pub trait RentFactoryCore {
   //
   fn rent_token_is_locked(&self, token_id: TokenId) -> bool;
 
-  fn rent_add(&mut self, token_id: TokenId, account_id: AccountId, price_per_hour: U128, min_time: u64, max_time: u64);
+  fn rent_update(&mut self, token_id: TokenId, account_id: AccountId, price_per_hour: U128, min_time: u64, max_time: u64);
   fn rent_remove(&mut self, token_id: TokenId, account_id: AccountId);
 
   // payable

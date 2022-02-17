@@ -4,7 +4,7 @@ use near_sdk::collections::{LazyOption, LookupMap, TreeMap, UnorderedSet};
 use near_sdk::json_types::U128;
 
 use crate::nft::*;
-use crate::nft::metadata::{TokenType, NFT_METADATA_SPEC, NonFungibleTokenMetadataProvider, TokenMetadata};
+use crate::nft::metadata::{TokenType, NFT_METADATA_SPEC, NonFungibleTokenMetadataProvider, TokenMetadata, TokenSubType};
 use std::collections::HashMap;
 
 mod nft;
@@ -49,10 +49,14 @@ enum StorageKey {
   TokenRarity,
   TokenCollection,
   TokenType,
+  TokenSubType,
 
   // Fractionation
   Fractionations,
   FractionationTokens,
+  FractionationsIds,
+  // FractionationsByOwner,
+  FractionationsCompleted,
 
   // SaleTokensInner { sale_hash: Vec<u8> },
 }
@@ -100,11 +104,14 @@ impl Contract {
       Some(StorageKey::TokenRarity),
       Some(StorageKey::TokenCollection),
       Some(StorageKey::TokenType),
+      Some(StorageKey::TokenSubType),
 
       Some(StorageKey::TokenRoyalty),
 
       Some(StorageKey::Fractionations),
       Some(StorageKey::FractionationTokens),
+      Some(StorageKey::FractionationsIds),
+      Some(StorageKey::FractionationsCompleted),
     );
 
     Self {
@@ -120,10 +127,17 @@ impl Contract {
     self.tokens.internal_nft_set_locked(&token_id, false);
   }
 
-  pub fn test(&mut self, token_id: TokenId) -> u64 {
+  pub fn test(&mut self, token_id: TokenId, title: String) -> TokenId {
     self.tokens.assert_owner();
 
-    self.tokens.fractionation_completed_by_id.as_ref().expect("Error").get(&"4018".to_string()).unwrap()
+    let metadata_by_id = self.tokens.token_metadata_by_id.as_mut().unwrap();
+    let mut metadata = metadata_by_id.get(&token_id).expect("Not found");
+
+    metadata.title = Some(title);
+
+    metadata_by_id.insert(&token_id, &metadata);
+
+    token_id
   }
 
   #[init(ignore_state)]
@@ -172,6 +186,7 @@ impl Contract {
       pub token_rarity_by_id: Option<LookupMap<TokenId, TokenRarity>>,
       pub token_collection_by_id: Option<LookupMap<TokenId, TokenCollection>>,
       pub token_type_by_id: Option<LookupMap<TokenId, TokenType>>,
+      pub token_sub_type_by_id: Option<LookupMap<TokenId, TokenSubType>>,
 
       // ===== Fractionation feature =====
       // key part -> new token
@@ -233,6 +248,7 @@ impl Contract {
       token_rarity_by_id: old.tokens.token_rarity_by_id,
       token_collection_by_id: old.tokens.token_collection_by_id,
       token_type_by_id: old.tokens.token_type_by_id,
+      token_sub_type_by_id: old.tokens.token_sub_type_by_id,
 
       // ===== Fractionation feature =====
       // key part -> new token

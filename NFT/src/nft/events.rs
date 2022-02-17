@@ -29,6 +29,7 @@ impl NftCreate<'_> {
 pub struct NftOnLock<'a> {
   pub token_id: &'a TokenId,
   pub locked: &'a bool,
+  pub account_id: &'a AccountId,
 }
 
 impl NftOnLock<'_> {
@@ -45,20 +46,20 @@ impl NftOnLock<'_> {
 
 #[must_use]
 #[derive(Serialize, Debug, Clone)]
-pub struct NftPayout<'a> {
+pub struct NftTransferPayout<'a> {
   pub token_id: &'a TokenId,
   pub sender_id: &'a AccountId,
   pub receiver_id: &'a AccountId,
   pub balance: &'a U128,
 }
 
-impl NftPayout<'_> {
+impl NftTransferPayout<'_> {
   pub fn emit(self) {
     Self::emit_many(&[self])
   }
 
-  pub fn emit_many(data: &[NftPayout<'_>]) {
-    new_171_v1(Nep171EventKind::NftPayout(data)).emit()
+  pub fn emit_many(data: &[NftTransferPayout<'_>]) {
+    new_171_v1(Nep171EventKind::NftTransferPayout(data)).emit()
   }
 }
 
@@ -186,7 +187,7 @@ pub(crate) struct Nep171Event<'a> {
 #[allow(clippy::enum_variant_names)]
 enum Nep171EventKind<'a> {
   NftCreate(&'a [NftCreate<'a>]),
-  NftPayout(&'a [NftPayout<'a>]),
+  NftTransferPayout(&'a [NftTransferPayout<'a>]),
   FractionationCreate(&'a [FractionationCreate<'a>]),
   FractionationAddToken(&'a [FractionationAddToken<'a>]),
   FractionationComplete(&'a [FractionationComplete<'a>]),

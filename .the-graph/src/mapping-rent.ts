@@ -1,9 +1,9 @@
 import { near, store } from "@graphprotocol/graph-ts"
 import { log } from '@graphprotocol/graph-ts'
-import {Account, Rent} from '../generated/schema';
+import { Account, Rent } from '../generated/schema';
 import { parseEvent } from "./utils";
-import {getOrCreateAccount} from "./helpers/account";
-import {BigDecimal} from "@graphprotocol/graph-ts/index";
+import { getOrCreateAccount } from "./helpers/account";
+import { BigDecimal } from "@graphprotocol/graph-ts/index";
 
 export function handleRent(
   receipt: near.ReceiptWithOutcome

@@ -63,9 +63,6 @@ impl RentFactoryEnumeration for RentFactory {
   }
 
   fn rented_tokens_supply_for_account(&self, account_id: AccountId) -> U128 {
-    self.rent_tokens_per_account
-      .get(&account_id)
-      .map(|account_tokens| U128::from(account_tokens.len() as u128))
-      .unwrap_or(U128(0))
+    U128::from(self.internal_rent_token_ids_for_account(&account_id).len() as u128)
   }
 }

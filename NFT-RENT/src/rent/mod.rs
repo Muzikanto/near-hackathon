@@ -3,11 +3,9 @@ pub use utils::*;
 
 pub use self::base::{RentFactoryCore, RentFactoryResolve};
 pub use self::enumeration::RentFactoryEnumeration;
-pub use self::stats::RentFactoryStats;
 pub use self::meta::{TokenId, JsonRent, Rent};
 
 pub mod enumeration;
-pub mod stats;
 pub mod base;
 pub mod meta;
 

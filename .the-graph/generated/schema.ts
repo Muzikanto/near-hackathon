@@ -11,97 +11,7 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class Market extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("salesFloor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("rentsFloor", Value.fromBigDecimal(BigDecimal.zero()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save Market entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save Market entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("Market", id.toString(), this);
-    }
-  }
-
-  static load(id: string): Market | null {
-    return changetype<Market | null>(store.get("Market", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get salesFloor(): BigDecimal {
-    let value = this.get("salesFloor");
-    return value!.toBigDecimal();
-  }
-
-  set salesFloor(value: BigDecimal) {
-    this.set("salesFloor", Value.fromBigDecimal(value));
-  }
-
-  get rentsFloor(): BigDecimal {
-    let value = this.get("rentsFloor");
-    return value!.toBigDecimal();
-  }
-
-  set rentsFloor(value: BigDecimal) {
-    this.set("rentsFloor", Value.fromBigDecimal(value));
-  }
-
-  get salesCount(): i32 {
-    let value = this.get("salesCount");
-    return value!.toI32();
-  }
-
-  set salesCount(value: i32) {
-    this.set("salesCount", Value.fromI32(value));
-  }
-
-  get rentsCount(): i32 {
-    let value = this.get("rentsCount");
-    return value!.toI32();
-  }
-
-  set rentsCount(value: i32) {
-    this.set("rentsCount", Value.fromI32(value));
-  }
-
-  get salesOwners(): i32 {
-    let value = this.get("salesOwners");
-    return value!.toI32();
-  }
-
-  set salesOwners(value: i32) {
-    this.set("salesOwners", Value.fromI32(value));
-  }
-
-  get rentsOwners(): i32 {
-    let value = this.get("rentsOwners");
-    return value!.toI32();
-  }
-
-  set rentsOwners(value: i32) {
-    this.set("rentsOwners", Value.fromI32(value));
-  }
-}
-
-export class Metadata extends Entity {
+export class TokenMetadata extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -111,19 +21,19 @@ export class Metadata extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Metadata entity without an ID");
+    assert(id != null, "Cannot save TokenMetadata entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save Metadata entity with non-string ID. " +
+        "Cannot save TokenMetadata entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("Metadata", id.toString(), this);
+      store.set("TokenMetadata", id.toString(), this);
     }
   }
 
-  static load(id: string): Metadata | null {
-    return changetype<Metadata | null>(store.get("Metadata", id));
+  static load(id: string): TokenMetadata | null {
+    return changetype<TokenMetadata | null>(store.get("TokenMetadata", id));
   }
 
   get id(): string {
@@ -284,6 +194,23 @@ export class Token extends Entity {
     }
   }
 
+  get tokenSubType(): string | null {
+    let value = this.get("tokenSubType");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set tokenSubType(value: string | null) {
+    if (!value) {
+      this.unset("tokenSubType");
+    } else {
+      this.set("tokenSubType", Value.fromString(<string>value));
+    }
+  }
+
   get rarity(): string | null {
     let value = this.get("rarity");
     if (!value || value.kind == ValueKind.NULL) {
@@ -328,8 +255,8 @@ export class Token extends Entity {
     this.set("ownerId", Value.fromString(value));
   }
 
-  get metadataId(): string | null {
-    let value = this.get("metadataId");
+  get tokenMetadataId(): string | null {
+    let value = this.get("tokenMetadataId");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -337,16 +264,16 @@ export class Token extends Entity {
     }
   }
 
-  set metadataId(value: string | null) {
+  set tokenMetadataId(value: string | null) {
     if (!value) {
-      this.unset("metadataId");
+      this.unset("tokenMetadataId");
     } else {
-      this.set("metadataId", Value.fromString(<string>value));
+      this.set("tokenMetadataId", Value.fromString(<string>value));
     }
   }
 
-  get tokenSaleId(): string | null {
-    let value = this.get("tokenSaleId");
+  get mintId(): string | null {
+    let value = this.get("mintId");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -354,11 +281,11 @@ export class Token extends Entity {
     }
   }
 
-  set tokenSaleId(value: string | null) {
+  set mintId(value: string | null) {
     if (!value) {
-      this.unset("tokenSaleId");
+      this.unset("mintId");
     } else {
-      this.set("tokenSaleId", Value.fromString(<string>value));
+      this.set("mintId", Value.fromString(<string>value));
     }
   }
 
@@ -388,8 +315,8 @@ export class Token extends Entity {
     this.set("owner", Value.fromString(value));
   }
 
-  get metadata(): string | null {
-    let value = this.get("metadata");
+  get tokenMetadata(): string | null {
+    let value = this.get("tokenMetadata");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -397,16 +324,16 @@ export class Token extends Entity {
     }
   }
 
-  set metadata(value: string | null) {
+  set tokenMetadata(value: string | null) {
     if (!value) {
-      this.unset("metadata");
+      this.unset("tokenMetadata");
     } else {
-      this.set("metadata", Value.fromString(<string>value));
+      this.set("tokenMetadata", Value.fromString(<string>value));
     }
   }
 
-  get tokenSale(): string | null {
-    let value = this.get("tokenSale");
+  get mint(): string | null {
+    let value = this.get("mint");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -414,11 +341,11 @@ export class Token extends Entity {
     }
   }
 
-  set tokenSale(value: string | null) {
+  set mint(value: string | null) {
     if (!value) {
-      this.unset("tokenSale");
+      this.unset("mint");
     } else {
-      this.set("tokenSale", Value.fromString(<string>value));
+      this.set("mint", Value.fromString(<string>value));
     }
   }
 
@@ -640,7 +567,7 @@ export class Account extends Entity {
   }
 }
 
-export class TokenSale extends Entity {
+export class Mint extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -651,19 +578,19 @@ export class TokenSale extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save TokenSale entity without an ID");
+    assert(id != null, "Cannot save Mint entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save TokenSale entity with non-string ID. " +
+        "Cannot save Mint entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("TokenSale", id.toString(), this);
+      store.set("Mint", id.toString(), this);
     }
   }
 
-  static load(id: string): TokenSale | null {
-    return changetype<TokenSale | null>(store.get("TokenSale", id));
+  static load(id: string): Mint | null {
+    return changetype<Mint | null>(store.get("Mint", id));
   }
 
   get id(): string {
@@ -1052,15 +979,6 @@ export class Sale extends Entity {
     this.set("tokenId", Value.fromString(value));
   }
 
-  get createdAt(): i32 {
-    let value = this.get("createdAt");
-    return value!.toI32();
-  }
-
-  set createdAt(value: i32) {
-    this.set("createdAt", Value.fromI32(value));
-  }
-
   get isAuction(): boolean {
     let value = this.get("isAuction");
     return value!.toBoolean();
@@ -1068,6 +986,15 @@ export class Sale extends Entity {
 
   set isAuction(value: boolean) {
     this.set("isAuction", Value.fromBoolean(value));
+  }
+
+  get createdAt(): i32 {
+    let value = this.get("createdAt");
+    return value!.toI32();
+  }
+
+  set createdAt(value: i32) {
+    this.set("createdAt", Value.fromI32(value));
   }
 
   get owner(): string {

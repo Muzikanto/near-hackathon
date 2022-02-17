@@ -5,7 +5,7 @@ use near_sdk::json_types::U128;
 use crate::meta::{Rent, JsonRent};
 use crate::base::RentFactory;
 use crate::{TokenId, hash_account_id, date_now};
-use crate::base::events::{log_rent_add, log_rent_remove};
+use crate::base::events::{log_rent_add, log_rent_remove, log_rent_update};
 
 pub const RENT_TIME_MIN: u64 = 899999; // min 15 min (900000)
 pub const RENT_TIME_NAX: u64 = 8639999999; // max 100 days (8640000000)
@@ -47,7 +47,27 @@ impl RentFactory {
     log_rent_add(&rent);
   }
 
-  pub(crate) fn internal_rent_remove(&mut self, token_id: &TokenId, account_id: &AccountId) {
+  pub(crate) fn internal_rent_update(&mut self, token_id: &TokenId, account_id: &AccountId, price_per_hour: &U128, time: &u64, max_time: &u64) {
+    let is_paid = self.rents_current.get(&token_id).is_some();
+
+    self.rents_pending.insert(&token_id);
+
+    assert!(!is_paid, "Rent already started");
+
+    let mut rent = self.rents_by_id.get(&token_id).expect("Not found rent");
+
+    assert_eq!(account_id, &rent.owner_id, "Unauthorized");
+
+    rent.price_per_hour = price_per_hour.clone();
+    rent.min_time = time.clone();
+    rent.max_time = max_time.clone();
+
+    self.rents_by_id.insert(&token_id, &rent);
+
+    log_rent_update(&rent);
+  }
+
+  pub(crate) fn internal_remove_pending_rent(&mut self, token_id: &TokenId, account_id: &AccountId) {
     let is_paid = self.rents_current.get(&token_id).is_some();
 
     assert!(!is_paid, "Token is already in rent");
@@ -101,6 +121,8 @@ impl RentFactory {
     }
   }
 
+  //
+
   pub(crate) fn internal_add_rent_to_account(
     &mut self,
     account_id: &AccountId,
@@ -119,7 +141,7 @@ impl RentFactory {
     self.rents_per_account.insert(account_id, &rents_set);
   }
 
-  pub(crate) fn internal_remove_rent_from_account(
+  pub(crate) fn internal_remove_current_rent(
     &mut self,
     account_id: &AccountId,
     token_id: &TokenId,
@@ -127,9 +149,12 @@ impl RentFactory {
     self.rents_by_id.remove(&token_id);
     self.rents_current.remove(&token_id);
 
+    self.rents_end_by_id.remove(&token_id);
+  }
+
+  pub(crate) fn internal_remove_rent_from_account(&mut self, account_id: &AccountId, token_id: &TokenId) {
     let mut rents_set = self
       .rents_per_account
-
       .get(account_id)
       .expect("Rent should be owned by the sender");
 
@@ -140,9 +165,9 @@ impl RentFactory {
     } else {
       self.rents_per_account.insert(account_id, &rents_set);
     }
-
-    self.rents_end_by_id.remove(&token_id);
   }
+
+  //
 
   pub(crate) fn internal_rent_is_ended(&self, token_id: &TokenId) -> bool {
     let rent_end_at = self.rents_end_by_id.get(&token_id).expect("Not found");

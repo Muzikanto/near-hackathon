@@ -1,6 +1,6 @@
 use crate::nft::{NonFungibleToken, Token, TokenId, random_number};
 use near_sdk::{AccountId, env};
-use crate::nft::metadata::{TokenRarity, TokenMetadata, TokenType, TokenCollection};
+use crate::nft::metadata::{TokenRarity, TokenMetadata, TokenType, TokenCollection, TokenSubType};
 use crate::nft::mint::NonFungibleTokenMint;
 use crate::nft::royalty::Royalty;
 use crate::SaleId;
@@ -43,6 +43,7 @@ impl NonFungibleTokenMint for NonFungibleToken {
     rarity: TokenRarity,
     collection: TokenCollection,
     token_type: TokenType,
+    token_sub_type: Option<TokenSubType>,
     bind_to_owner: Option<bool>,
     sale_id: Option<SaleId>,
     perpetual_royalties: Option<Royalty>,
@@ -61,6 +62,7 @@ impl NonFungibleTokenMint for NonFungibleToken {
       perpetual_royalties,
       fractionation_id,
       token_type,
+      token_sub_type,
     )
   }
 

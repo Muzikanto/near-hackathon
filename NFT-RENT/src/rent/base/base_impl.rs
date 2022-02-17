@@ -4,13 +4,13 @@ use near_sdk::collections::{LookupMap, UnorderedSet, TreeMap};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use crate::base::{RentFactoryCore, RentFactoryResolve};
 use crate::meta::Rent;
-use crate::{TokenId, assert_at_least_one_yocto, time_get_minutes, date_now};
-use crate::base::events::{log_rent_pay, log_rent_claim};
+use crate::{TokenId, time_get_minutes, date_now};
+use crate::base::events::{log_rent_pay, log_rent_claim, log_rent_resolve_pay};
 
 // const GAS_FOR_RENT_PAY: Gas = Gas(5_000_000_000_000);
-const GAS_FOR_RENT_RESOLVE_PAY: Gas = Gas(20_000_000_000_000);
-const GAS_FOR_NFT_LOCK: Gas = Gas(4_000_000_000_000);
-const GAS_FOR_RENT_CLAIM: Gas = Gas(18_000_000_000_000);
+const GAS_FOR_RENT_PAY: Gas = Gas(29_000_000_000_000);
+const GAS_FOR_NFT_LOCK: Gas = Gas(5_000_000_000_000);
+const GAS_FOR_RENT_CLAIM: Gas = Gas(25_000_000_000_000);
 // const GAS_FOR_RENT_RESOLVE_CLAIM: Gas = Gas(20_000_000_000_000);
 const NO_DEPOSIT: Balance = 0;
 
@@ -90,20 +90,22 @@ impl RentFactoryCore for RentFactory {
     self.internal_rent_token_is_locked(&token_id)
   }
 
-  fn rent_add(&mut self, token_id: TokenId, account_id: AccountId, price_per_hour: U128, min_time: u64, max_time: u64) {
-    assert_at_least_one_yocto();
+  fn rent_update(&mut self, token_id: TokenId, account_id: AccountId, price_per_hour: U128, min_time: u64, max_time: u64) {
+    // assert_at_least_one_yocto();
+    assert_eq!(account_id, env::predecessor_account_id(), "Unauthorized");
+
     self.assert_approved(&token_id);
     self.assert_valid_time(&min_time);
     self.assert_valid_time(&max_time);
 
-    self.internal_rent_add(&token_id, &account_id, &price_per_hour, &min_time, &max_time);
+    self.internal_rent_update(&token_id, &account_id, &price_per_hour, &min_time, &max_time);
   }
 
   fn rent_remove(&mut self, token_id: TokenId, account_id: AccountId) {
-    assert_at_least_one_yocto();
+    // assert_at_least_one_yocto();
     self.assert_approved(&token_id);
 
-    self.internal_rent_remove(&token_id, &account_id)
+    self.internal_remove_pending_rent(&token_id, &account_id)
   }
 
   // #[payable]
@@ -122,14 +124,16 @@ impl RentFactoryCore for RentFactory {
     let minutes = time_get_minutes(time) as u128;
     let price = ((rent.price_per_hour.0) * minutes / 60) as u128;
 
-    env::log_str(&format!("{}{}{}{}", "Minutes: ", minutes, " Price ", price).to_string());
-
     assert!(deposit >= price, "Invalid attached deposit {}, price {}", deposit.to_string(), price.to_string());
 
     let now = date_now();
     let end_time = now + time;
 
     assert!(time >= rent.min_time && time <= rent.max_time, "Invalid rent time");
+
+    self.rents_pending.remove(&token_id);
+    self.internal_remove_rent_from_account(&rent.owner_id, &token_id);
+    log_rent_pay(&token_id, &rent.owner_id);
 
     ext_locked_receiver::nft_on_lock(
       token_id.clone(),
@@ -148,12 +152,12 @@ impl RentFactoryCore for RentFactory {
 
       env::current_account_id().clone(),
       NO_DEPOSIT,
-      GAS_FOR_RENT_RESOLVE_PAY,
+      env::prepaid_gas() - GAS_FOR_RENT_PAY,
     ))
   }
 
   fn rent_claim(&mut self, token_id: TokenId, account_id: AccountId) -> Promise {
-    assert_at_least_one_yocto();
+    // assert_at_least_one_yocto();
     assert_eq!(&env::predecessor_account_id(), &account_id, "Not authorized");
 
     let rent = self.rents_by_id.get(&token_id).expect("Not found rent");
@@ -203,12 +207,11 @@ impl RentFactoryResolve for RentFactory {
 
     self.rents_end_by_id.insert(&token_id, &end_time);
     self.rents_current.insert(&token_id, &receiver_id);
-    self.rents_pending.remove(&token_id);
     self.internal_add_token_to_account(&receiver_id, &token_id);
 
-    log_rent_pay(&token_id, &owner_id, &receiver_id, &time, &end_time, &price);
+    Promise::new(owner_id.clone()).transfer(u128::from(price.clone()));
 
-    Promise::new(owner_id).transfer(u128::from(price));
+    log_rent_resolve_pay(&token_id, &owner_id, &receiver_id, &time, &end_time, &price);
 
     U128(0)
   }
@@ -221,7 +224,7 @@ impl RentFactoryResolve for RentFactory {
     }
 
     self.internal_remove_token_from_account(&renter_id, &token_id);
-    self.internal_remove_rent_from_account(&owner_id, &token_id);
+    self.internal_remove_current_rent(&owner_id, &token_id);
 
     log_rent_claim(&token_id, &owner_id, &renter_id);
   }

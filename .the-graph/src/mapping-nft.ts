@@ -1,5 +1,5 @@
 import { near, store, BigDecimal } from "@graphprotocol/graph-ts"
-import { Token, Account, Metadata, Fractionation, TokenSale } from "../generated/schema"
+import { Token, Account, TokenMetadata, Fractionation, Mint } from "../generated/schema"
 import { log } from '@graphprotocol/graph-ts'
 import { parseEvent } from "./utils";
 import { getOrCreateAccount } from "./helpers/account";
@@ -59,6 +59,7 @@ function handleAction(
 
         const collection = tokenData.get('collection');
         const tokenType = tokenData.get('token_type');
+        const tokenSubType = tokenData.get('token_sub_type');
         const rarity = tokenData.get('rarity');
         const saleId = tokenData.get('sale_id');
         const bindToOwner = tokenData.get('bind_to_owner');
@@ -70,9 +71,9 @@ function handleAction(
           continue;
         }
         if (saleId && !saleId.isNull()) {
-          const sale = TokenSale.load(saleId.toString());
+          const mint = Mint.load(saleId.toString());
 
-          if (!sale) {
+          if (!mint) {
             log.error("[nft_create] - not found sale {}", [saleId.toString()]);
             continue;
           }
@@ -85,18 +86,19 @@ function handleAction(
         token.owner = ownerId.toString();
         token.collection = collection ? collection.toString() : null;
         token.tokenType = tokenType ? tokenType.toString() : null;
+        token.tokenSubType = tokenSubType ? tokenSubType.toString() : null;
         token.rarity = rarity ? rarity.toString() : null;
         token.bindToOwner = bindToOwner && !bindToOwner.isNull() ? bindToOwner.toBool() : false;
         token.locked = locked && !locked.isNull() ? locked.toBool() : false;
 
         token.fractionationId = fractionationId && !fractionationId.isNull() ? fractionationId.toString() : null;
         token.fractionation = fractionationId && !fractionationId.isNull() ? fractionationId.toString() : null
-        token.tokenSaleId = saleId && !saleId.isNull() ? saleId.toString() : null;
-        token.tokenSale = saleId && !saleId.isNull() ? saleId.toString() : null;
+        token.mintId = saleId && !saleId.isNull() ? saleId.toString() : null;
+        token.mint = saleId && !saleId.isNull() ? saleId.toString() : null;
 
         if (metadata && !metadata.isNull()) {
           const metaObj = metadata.toObject();
-          const tokenMetadata = new Metadata(tokenId.toString());
+          const tokenMetadata = new TokenMetadata(tokenId.toString());
           const metaTitle = metaObj.get("title");
           const metaDescription = metaObj.get("description");
           const metaMedia = metaObj.get("media");
@@ -106,8 +108,8 @@ function handleAction(
           tokenMetadata.decsription = metaDescription && !metaDescription.isNull() ? metaDescription.toString() : null;
           tokenMetadata.media = metaMedia && !metaMedia.isNull() ? metaMedia.toString() : null;
 
-          token.metadata = tokenId.toString();
-          token.metadataId = tokenId.toString();
+          token.tokenMetadata = tokenId.toString();
+          token.tokenMetadataId = tokenId.toString();
 
           tokenMetadata.save();
         }
@@ -317,19 +319,19 @@ function handleAction(
           continue;
         }
 
-        const sale = new TokenSale(id.toString());
+        const mint = new Mint(id.toString());
 
-        sale.name = name.toString();
-        sale.amount = amount.toU64() as i32;
-        sale.price = price.toString();
-        sale.buyMax = buyMax.toU64() as i32;
-        sale.perTransactionMax = perTransactionMax.toU64() as i32;
-        sale.perTransactionMin = perTransactionMin.toU64() as i32;
-        sale.notMinted = notMinted.toU64() as i32;
-        sale.locked = locked && !locked.isNull() ? locked.toBool() : false;
-        sale.startDate = startDate && !startDate.isNull() ? startDate.toBigInt() : null;
+        mint.name = name.toString();
+        mint.amount = amount.toU64() as i32;
+        mint.price = price.toString();
+        mint.buyMax = buyMax.toU64() as i32;
+        mint.perTransactionMax = perTransactionMax.toU64() as i32;
+        mint.perTransactionMin = perTransactionMin.toU64() as i32;
+        mint.notMinted = notMinted.toU64() as i32;
+        mint.locked = locked && !locked.isNull() ? locked.toBool() : false;
+        mint.startDate = startDate && !startDate.isNull() ? startDate.toBigInt() : null;
 
-        sale.save();
+        mint.save();
       } else if (method == "nft_sale_update") {
         const saleId = data.get('sale_id');
         const date = data.get('date');
@@ -339,16 +341,16 @@ function handleAction(
           continue;
         }
 
-        const sale = TokenSale.load(saleId.toString());
+        const mint = Mint.load(saleId.toString());
 
-        if (!sale) {
+        if (!mint) {
           log.error("[nft_sale_update] - not found sale {}", [saleId.toString()]);
           continue;
         }
 
-        sale.startDate = date.toBigInt();
+        mint.startDate = date.toBigInt();
 
-        sale.save();
+        mint.save();
       } else if (method == "nft_sale_start") {
         const saleId = data.get('sale_id');
         const date = data.get('date');
@@ -358,16 +360,16 @@ function handleAction(
           continue;
         }
 
-        const sale = TokenSale.load(saleId.toString());
+        const mint = Mint.load(saleId.toString());
 
-        if (!sale) {
+        if (!mint) {
           log.error("[nft_sale_start] - not found sale {}", [saleId.toString()]);
           continue;
         }
 
-        sale.startDate = date.toBigInt();
+        mint.startDate = date.toBigInt();
 
-        sale.save();
+        mint.save();
       } else if (method == "nft_mint") {
         const tokenIds = data.get('token_ids');
         const receiverId = data.get('owner_id');

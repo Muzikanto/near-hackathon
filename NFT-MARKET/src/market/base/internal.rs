@@ -1,5 +1,5 @@
 use crate::*;
-use crate::market::base::{DELIMETER, GAS_FOR_FT_TRANSFER};
+use crate::market::base::{DELIMETER, GAS_FOR_FT_TRANSFER, log_market_remove_sale};
 use crate::market::meta::{TokenId, Bids};
 
 #[ext_contract(ext_contract)]
@@ -72,7 +72,8 @@ impl MarketFactory {
                 .insert(&nft_contract_id, &by_nft_contract_id);
         }
 
+      log_market_remove_sale(&sale.owner_id, &nft_contract_id, &token_id);
 
-        sale
+      sale
     }
 }

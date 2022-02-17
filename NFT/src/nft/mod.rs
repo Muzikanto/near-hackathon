@@ -7,7 +7,7 @@ pub use self::fractionation::{Fractionation};
 pub use self::sale::{Sale, JsonSale, SaleId};
 pub use self::payout::{Payout};
 pub use self::royalty::{Royalty};
-pub use self::metadata::{NFTContractMetadata, TokenCollection, TokenRarity, TokenType};
+pub use self::metadata::{NFTContractMetadata, TokenCollection, TokenRarity, TokenType, TokenSubType};
 
 // ==========
 

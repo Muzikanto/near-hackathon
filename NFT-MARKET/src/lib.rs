@@ -71,5 +71,4 @@ impl Contract {
 }
 
 impl_market_core!(Contract, market);
-impl_market_stats!(Contract, market);
 impl_market_enumeration!(Contract, market);

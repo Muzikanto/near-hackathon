@@ -5,7 +5,7 @@ use crate::nft::royalty::royalty_to_payout;
 use crate::royalty::{MINTER_ROYALTY_CAP, CONTRACT_ROYALTY_CAP};
 use near_sdk::{env, assert_one_yocto, AccountId};
 use std::collections::HashMap;
-use crate::nft::events::NftPayout;
+use crate::nft::events::NftTransferPayout;
 
 pub type Payout = HashMap<AccountId, U128>;
 
@@ -98,7 +98,7 @@ impl NonFungibleTokenPayout for NonFungibleToken {
       payout.insert(owner_id.clone(), U128::from(balance_u128));
     }
 
-    NftPayout {
+    NftTransferPayout {
       token_id: &token_id,
       sender_id: &sender_id,
       receiver_id: &receiver_id,

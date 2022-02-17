@@ -1,6 +1,6 @@
 use super::resolver::NonFungibleTokenResolver;
 use crate::nft::base::NonFungibleTokenCore;
-use crate::nft::metadata::{TokenMetadata, TokenRarity, TokenCollection, TokenType};
+use crate::nft::metadata::{TokenMetadata, TokenRarity, TokenCollection, TokenType, TokenSubType};
 use crate::nft::token::{Token, TokenId};
 use crate::nft::utils::{
   hash_account_id, refund_approved_account_ids,
@@ -20,9 +20,6 @@ const NO_DEPOSIT: Balance = 0;
 
 #[derive(BorshSerialize, BorshStorageKey)]
 pub enum StorageKey {
-  FractionationsIds,
-  FractionationsByOwner,
-  FractionationsCompleted,
   TokensPerOwner { account_hash: Vec<u8> },
   TokenPerOwnerInner { account_id_hash: CryptoHash },
 }
@@ -102,6 +99,7 @@ pub struct NonFungibleToken {
   pub token_rarity_by_id: Option<LookupMap<TokenId, TokenRarity>>,
   pub token_collection_by_id: Option<LookupMap<TokenId, TokenCollection>>,
   pub token_type_by_id: Option<LookupMap<TokenId, TokenType>>,
+  pub token_sub_type_by_id: Option<LookupMap<TokenId, TokenSubType>>,
 
   // ===== Fractionation feature =====
   // key part -> new token
@@ -113,7 +111,7 @@ pub struct NonFungibleToken {
 
 
 impl NonFungibleToken {
-  pub fn new<Q, R, S, T, L1, L2, S1, S2, S3, S4, S5, S6, P1, E1, E2, E3, F1, F2>(
+  pub fn new<Q, R, S, T, L1, L2, S1, S2, S3, S4, S5, S6, P1, E1, E2, E3, E4, F1, F2, F3, F4>(
     owner_by_id_prefix: Q,
     owner_id: AccountId,
     token_metadata_prefix: Option<R>,
@@ -133,11 +131,14 @@ impl NonFungibleToken {
     token_rarity_prefix: Option<E1>,
     token_collection_prefix: Option<E2>,
     token_type_prefix: Option<E3>,
+    token_sub_type_prefix: Option<E4>,
 
     token_royalty_prefix: Option<P1>,
 
     fractionation_prefix: Option<F1>,
     fractionation_tokens_prefix: Option<F2>,
+    fractionation_available_prefix: Option<F3>,
+    fractionation_completed_prefix: Option<F4>,
   ) -> Self
     where
       Q: IntoStorageKey,
@@ -157,11 +158,14 @@ impl NonFungibleToken {
       E1: IntoStorageKey,
       E2: IntoStorageKey,
       E3: IntoStorageKey,
+      E4: IntoStorageKey,
 
       P1: IntoStorageKey,
 
       F1: IntoStorageKey,
       F2: IntoStorageKey,
+      F3: IntoStorageKey,
+      F4: IntoStorageKey,
   {
     let (approvals_by_id, next_approval_id_by_id) = if let Some(prefix) = approval_prefix {
       let prefix: Vec<u8> = prefix.into_storage_key();
@@ -201,12 +205,13 @@ impl NonFungibleToken {
       token_rarity_by_id: token_rarity_prefix.map(LookupMap::new),
       token_collection_by_id: token_collection_prefix.map(LookupMap::new),
       token_type_by_id: token_type_prefix.map(LookupMap::new),
+      token_sub_type_by_id: token_sub_type_prefix.map(LookupMap::new),
 
       // fractionation feature
       fractionation_by_id: fractionation_prefix.map(TreeMap::new),
       fractionation_token_by_id: fractionation_tokens_prefix.map(LookupMap::new),
-      fractionation_ids: Some(UnorderedSet::new(StorageKey::FractionationsIds)),
-      fractionation_completed_by_id: Some(LookupMap::new(StorageKey::FractionationsCompleted))
+      fractionation_ids: fractionation_available_prefix.map(UnorderedSet::new),
+      fractionation_completed_by_id: fractionation_completed_prefix.map(LookupMap::new),
     };
     this.measure_min_token_storage_cost();
     this

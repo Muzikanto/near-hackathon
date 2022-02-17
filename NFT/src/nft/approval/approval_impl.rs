@@ -57,7 +57,7 @@ impl NonFungibleTokenApproval for NonFungibleToken {
     account_id: AccountId,
     msg: Option<String>,
   ) -> Option<Promise> {
-    assert_at_least_one_yocto();
+    // assert_at_least_one_yocto();
 
     self.assert_available_approve(&token_id);
 
@@ -87,7 +87,7 @@ impl NonFungibleTokenApproval for NonFungibleToken {
     // excess.
     let storage_used =
       if old_approval_id.is_none() { bytes_for_approved_account_id(&account_id) } else { 0 };
-    refund_deposit(storage_used);
+    // refund_deposit(storage_used);
 
     let final_msg = msg.clone();
 
