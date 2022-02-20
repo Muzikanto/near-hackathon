@@ -117,5 +117,19 @@ pub enum TokenType {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub enum TokenSubType {
-  Hat,
+  Ring,
+  Boots,
+  Helmet,
+  Gloves,
+  Cloak,
+  Heavy,
+  Wristband,
+  Light,
+  Belt,
+  Knife,
+  Sword,
+  Hatchet,
+  Cudgel,
+  Staff,
+  Shield,
 }

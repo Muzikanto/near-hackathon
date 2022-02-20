@@ -60,6 +60,10 @@ impl NonFungibleToken {
   pub fn internal_sale_add_token(&mut self, sale_id: &SaleId, token_id: &TokenId) {
     let sale_by_token = self.sale_by_token.as_mut().unwrap();
     let tokens_per_sale = self.sale_tokens.as_mut().unwrap();
+    let random_tokens = self.sale_random_tokens.as_mut().unwrap();
+    let mut sale_random = random_tokens.get(&sale_id).unwrap_or_else(|| {
+      vec![]
+    });
 
     let sale_tokens = &mut tokens_per_sale.get(&sale_id).unwrap_or_else(|| {
       UnorderedSet::new(StorageKey::SaleTokensInner {
@@ -69,8 +73,9 @@ impl NonFungibleToken {
 
     sale_tokens.insert(&token_id);
     tokens_per_sale.insert(&sale_id, &sale_tokens);
-
     sale_by_token.insert(&token_id, &sale_id);
+    sale_random.push(token_id.clone());
+    random_tokens.insert(&sale_id, &sale_random);
 
     assert_ne!(sale_tokens.len(), 0, "{}", &format!("Token does not added to sale {}", &token_id.to_string()));
   }

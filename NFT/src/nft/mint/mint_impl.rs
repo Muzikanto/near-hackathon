@@ -18,7 +18,7 @@ impl NonFungibleToken {
         break;
       }
 
-      let rand_index = random_number(random_tokens.to_vec().len().clone());
+      let rand_index = random_number(random_tokens.len().clone());
       let token_id = random_tokens.get(rand_index).expect("Invalid token index").clone();
 
       random_tokens.remove(rand_index);
@@ -101,7 +101,8 @@ impl NonFungibleTokenMint for NonFungibleToken {
     NftMint {
       owner_id: &receiver_id,
       token_ids: &tokens,
-      memo: None
+      memo: None,
+      sale_id: &sale_id,
     }.emit()
   }
 }

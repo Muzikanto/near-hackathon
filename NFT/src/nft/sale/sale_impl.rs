@@ -38,12 +38,12 @@ impl SaleCore for NonFungibleToken {
 
     assert!(self.sales_locked.as_ref().unwrap().contains(&sale_id), "Sale already unlocked");
 
-    let tokens_per_sale = self.sale_tokens.as_ref().unwrap().get(&sale_id).expect("Not found sale tokens").as_vector().to_vec();
+    let tokens_per_sale = self.sale_tokens.as_ref().unwrap().get(&sale_id).expect("Not found sale tokens").len();
 
-    assert_eq!(u64::from(sale.amount) as usize, tokens_per_sale.len(), "Not all of tokens are minted");
+    assert_eq!(u64::from(sale.amount), tokens_per_sale, "Not all of tokens are minted");
 
     self.sales_available.as_mut().unwrap().insert(&sale_id);
-    self.sale_random_tokens.as_mut().unwrap().insert(&sale_id, &tokens_per_sale);
+    // self.sale_random_tokens.as_mut().unwrap().insert(&sale_id, &tokens_per_sale);
     self.sales_locked.as_mut().unwrap().remove(&sale_id);
     self.sale_date_by_id.as_mut().unwrap().insert(sale_id.clone(), date);
 

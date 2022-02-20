@@ -16,6 +16,7 @@
 use crate::event::NearEvent;
 use near_sdk::AccountId;
 use serde::Serialize;
+use crate::nft::SaleId;
 
 /// Data to log for an NFT mint event. To log this event, call [`.emit()`](NftMint::emit).
 #[must_use]
@@ -25,6 +26,7 @@ pub struct NftMint<'a> {
   pub token_ids: &'a Vec<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub memo: Option<&'a str>,
+  pub sale_id: &'a SaleId,
 }
 
 impl NftMint<'_> {
@@ -143,7 +145,7 @@ mod tests {
   fn nft_mint() {
     let owner_id = &bob();
     let token_ids = &["0", "1"];
-    NftMint { owner_id, token_ids, memo: None }.emit();
+    NftMint { owner_id, token_ids, memo: None, sale_id: &"test".to_string() }.emit();
     assert_eq!(
       test_utils::get_logs()[0],
       r#"EVENT_JSON:{"standard":"nep171","version":"1.0.0","event":"nft_mint","data":[{"owner_id":"bob","token_ids":["0","1"]}]}"#
@@ -154,10 +156,10 @@ mod tests {
   fn nft_mints() {
     let owner_id = &bob();
     let token_ids = &["0", "1"];
-    let mint_log = NftMint { owner_id, token_ids, memo: None };
+    let mint_log = NftMint { owner_id, token_ids, memo: None, sale_id: &"test".to_string() };
     NftMint::emit_many(&[
       mint_log,
-      NftMint { owner_id: &alice(), token_ids: &["2", "3"], memo: Some("has memo") },
+      NftMint { owner_id: &alice(), token_ids: &["2", "3"], memo: Some("has memo"), sale_id: &"test".to_string() },
     ]);
     assert_eq!(
       test_utils::get_logs()[0],
