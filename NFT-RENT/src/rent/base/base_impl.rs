@@ -230,7 +230,7 @@ impl RentFactoryResolve for RentFactory {
     let is_success = is_promise_success();
 
     if !is_success {
-      env::panic_str("Error during transfer nft")
+      // env::panic_str("Error during transfer nft")
     }
 
     self.internal_remove_token_from_account(&renter_id, &token_id);
