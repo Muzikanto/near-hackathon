@@ -300,7 +300,7 @@ impl NonFungibleTokenCore for NonFungibleToken {
     approval_id: Option<u64>,
     memo: Option<String>,
   ) {
-    assert_one_yocto();
+    // assert_one_yocto();
     let sender_id = env::predecessor_account_id();
 
     self.internal_transfer(&sender_id, &receiver_id, &token_id, approval_id, memo);

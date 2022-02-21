@@ -40,7 +40,7 @@ impl Contract {
       let this = Self {
         rent: RentFactory::new(
           owner_id.clone(),
-          AccountId::new_unchecked("dev-1644779734455-63115659267649".to_string()),
+          AccountId::new_unchecked("dev-1645382791353-85160807836465".to_string()),
           Some(StorageKey::ApprovedOwners),
           StorageKey::RentsCurrent,
           StorageKey::RentsPending,

@@ -8,15 +8,21 @@ use crate::{TokenId, time_get_minutes, date_now};
 use crate::base::events::{log_rent_pay, log_rent_claim, log_rent_resolve_pay};
 
 // const GAS_FOR_RENT_PAY: Gas = Gas(5_000_000_000_000);
-const GAS_FOR_RENT_PAY: Gas = Gas(29_000_000_000_000);
-const GAS_FOR_NFT_LOCK: Gas = Gas(5_000_000_000_000);
-const GAS_FOR_RENT_CLAIM: Gas = Gas(25_000_000_000_000);
+const GAS_FOR_RENT_PAY: Gas = Gas(40_000_000_000_000);
+const GAS_FOR_NFT_TRANSFER: Gas = Gas(15_000_000_000_000);
+const GAS_FOR_RENT_CLAIM: Gas = Gas(40_000_000_000_000);
 // const GAS_FOR_RENT_RESOLVE_CLAIM: Gas = Gas(20_000_000_000_000);
 const NO_DEPOSIT: Balance = 0;
 
 #[ext_contract(ext_locked_receiver)]
 pub trait NonFungibleTokenLockedReceiver {
-  fn nft_on_lock(&mut self, token_id: TokenId, locked: bool);
+  fn nft_transfer(
+  &mut self,
+  receiver_id: AccountId,
+  token_id: TokenId,
+  approval_id: Option<u64>,
+  memo: Option<String>,
+  );
 }
 #[ext_contract(ext_self)]
 trait ExtSelf {
@@ -135,16 +141,18 @@ impl RentFactoryCore for RentFactory {
     self.internal_remove_rent_from_account(&rent.owner_id, &token_id);
     log_rent_pay(&token_id, &rent.owner_id);
 
-    ext_locked_receiver::nft_on_lock(
+    ext_locked_receiver::nft_transfer(
+      env::current_account_id(),
       token_id.clone(),
-      true,
+      None,
+      None,
 
       self.nft_contract_id.clone(),
       NO_DEPOSIT,
-      GAS_FOR_NFT_LOCK,
+      GAS_FOR_NFT_TRANSFER,
     ).then(ext_self::rent_resolve_pay(
       token_id,
-      rent.owner_id,
+      env::current_account_id(),
       receiver_id,
       time,
       end_time,
@@ -170,13 +178,15 @@ impl RentFactoryCore for RentFactory {
 
     assert!(is_ended, "Rent is not expired");
 
-    ext_locked_receiver::nft_on_lock(
+    ext_locked_receiver::nft_transfer(
+      rent.owner_id.clone(),
       token_id.clone(),
-      false,
+      None,
+      None,
 
       self.nft_contract_id.clone(),
       NO_DEPOSIT,
-      GAS_FOR_NFT_LOCK,
+      GAS_FOR_NFT_TRANSFER,
     )
       .then(ext_self::rent_resolve_claim(
       token_id,
@@ -220,7 +230,7 @@ impl RentFactoryResolve for RentFactory {
     let is_success = is_promise_success();
 
     if !is_success {
-      env::panic_str("Error during unlock nft")
+      env::panic_str("Error during transfer nft")
     }
 
     self.internal_remove_token_from_account(&renter_id, &token_id);
